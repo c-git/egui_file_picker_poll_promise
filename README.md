@@ -3,6 +3,8 @@
 This example is based on the [original egui file browser](https://github.com/woelper/egui_pick_file) by [woelper](https://github.com/woelper) but modified to use poll-promise instead.
 It makes the app a bit more complex but closer to what I personally prefer to use as it prevents the user from clicking load or save while the picker is still open.
 
+Description from original:
+
 > Example app showing how to pick a file on both web and desktop.
 
 The web application can be accessed here:

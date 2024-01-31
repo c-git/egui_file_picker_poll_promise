@@ -60,14 +60,14 @@ impl eframe::App for BrowseApp {
             }
 
             if ui.button("💾 Save text to file").clicked() {
-                // let task = rfd::AsyncFileDialog::new().save_file();
-                // let contents = self.sample_text.clone();
-                // execute(async move {
-                //     let file = task.await;
-                //     if let Some(file) = file {
-                //         _ = file.write(contents.as_bytes()).await;
-                //     }
-                // });
+                let contents = self.sample_text.clone();
+                self.promise = execute(async move {
+                    let file = rfd::AsyncFileDialog::new().save_file().await;
+                    if let Some(file) = file {
+                        _ = file.write(contents.as_bytes()).await;
+                    }
+                    None
+                });
             }
         });
     }

@@ -74,15 +74,21 @@ impl eframe::App for BrowseApp {
 }
 
 #[cfg(target_arch = "wasm32")]
-fn execute(
-    f: impl std::future::Future<Output = Option<String>> + 'static,
-) -> Option<poll_promise::Promise<Option<String>>> {
+fn execute<F>(f: F) -> Option<poll_promise::Promise<Option<String>>>
+where
+    F: std::future::Future<Output = Option<String>> + 'static,
+{
     Some(poll_promise::Promise::spawn_local(f))
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-fn execute(
-    f: impl std::future::Future<Output = Option<String>> + std::marker::Send + 'static,
-) -> SaveLoadPromise {
+fn execute<F>(f: F) -> SaveLoadPromise
+where
+    F: std::future::Future<Output = Option<String>> + std::marker::Send + 'static,
+{
     Some(poll_promise::Promise::spawn_async(f))
 }
+
+// fn execute<F: std::future::Future<Output = ()> + 'static>(f: F) {
+//     wasm_bindgen_futures::spawn_local(f);
+// }

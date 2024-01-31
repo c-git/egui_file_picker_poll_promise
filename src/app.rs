@@ -46,12 +46,16 @@ impl eframe::App for BrowseApp {
                 // > Context is cheap to clone, and any clones refers to the same mutable data (Context uses refcounting internally).
                 // Taken from https://docs.rs/egui/0.24.1/egui/struct.Context.html
                 let ctx = ui.ctx().clone();
-                // TODO: Test if ctx is working as expected
                 self.promise = execute(async move {
-                    let file = task.await;
-                    let file = file?;
+                    let file = task.await?; // Returns None if file is None
                     let text = file.read().await;
+
+                    // Uncomment the following line to simulate taking long to load
+                    // tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
+
+                    // If not present screen will not refresh until next paint (comment out to test, works better with the sleep above to demonstrate)
                     ctx.request_repaint();
+
                     Some(String::from_utf8_lossy(&text).to_string())
                 });
             }

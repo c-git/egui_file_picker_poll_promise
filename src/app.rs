@@ -58,7 +58,6 @@ impl eframe::App for BrowseApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         // assign sample text once it comes in
         if let Some(promise) = &self.promise {
-            // TODO: Consume the promise and not allocate a new string
             if let Some(result) = promise.ready() {
                 if let Some(text) = result {
                     self.sample_text = text.clone();

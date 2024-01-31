@@ -30,7 +30,7 @@ impl BrowseApp {
                 let file = rfd::AsyncFileDialog::new().pick_file().await?; // Returns None if file is None
                 let text = file.read().await;
 
-                // Uncomment the following line to simulate taking long to load
+                // Uncomment the following line to simulate taking long to load, only works on native
                 // tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
 
                 // If not present screen will not refresh until next paint (comment out to test, works better with the sleep above to demonstrate)
@@ -63,7 +63,7 @@ impl eframe::App for BrowseApp {
                 if let Some(text) = result {
                     self.sample_text = text.clone();
                 } else {
-                    // User probably cancelled but the promise completed
+                    // User probably cancelled or it was saving but the promise completed either way
                 }
                 // Clear promise after we use it
                 self.promise = None;
@@ -72,7 +72,11 @@ impl eframe::App for BrowseApp {
 
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.text_edit_multiline(&mut self.sample_text);
-            self.buttons_save_load(ui);
+            if self.promise.is_none() {
+                self.buttons_save_load(ui);
+            } else {
+                ui.spinner();
+            }
         });
     }
 }

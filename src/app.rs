@@ -74,7 +74,7 @@ impl eframe::App for BrowseApp {
 }
 
 #[cfg(target_arch = "wasm32")]
-fn execute<F>(f: F) -> Option<poll_promise::Promise<Option<String>>>
+fn execute<F>(f: F) -> SaveLoadPromise
 where
     F: std::future::Future<Output = Option<String>> + 'static,
 {

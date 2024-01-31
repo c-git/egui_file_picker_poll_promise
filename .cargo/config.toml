@@ -6,4 +6,5 @@
 rustflags = ["--cfg=web_sys_unstable_apis"]
 
 [build]
-target = "wasm32-unknown-unknown"
+# Uncomment to work on wasm version. See https://c-git.github.io/rust/wasm/#switch-cargo-to-target-wasm for more info
+# target = "wasm32-unknown-unknown"

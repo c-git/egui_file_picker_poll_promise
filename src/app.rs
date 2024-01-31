@@ -73,19 +73,16 @@ impl eframe::App for BrowseApp {
     }
 }
 
+#[cfg(target_arch = "wasm32")]
+fn execute(
+    f: impl std::future::Future<Output = Option<String>> + 'static,
+) -> Option<poll_promise::Promise<Option<String>>> {
+    Some(poll_promise::Promise::spawn_local(f))
+}
+
+#[cfg(not(target_arch = "wasm32"))]
 fn execute(
     f: impl std::future::Future<Output = Option<String>> + std::marker::Send + 'static,
 ) -> SaveLoadPromise {
     Some(poll_promise::Promise::spawn_async(f))
 }
-
-// #[cfg(not(target_arch = "wasm32"))]
-// fn execute<F: Future<Output = ()> + Send + 'static>(f: F) {
-//     // this is stupid... use any executor of your choice instead
-//     std::thread::spawn(move || futures::executor::block_on(f));
-// }
-
-// #[cfg(target_arch = "wasm32")]
-// fn execute<F: Future<Output = ()> + 'static>(f: F) {
-//     wasm_bindgen_futures::spawn_local(f);
-// }

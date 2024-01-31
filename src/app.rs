@@ -1,4 +1,6 @@
+type SaveLoadPromise = Option<poll_promise::Promise<Option<String>>>;
 pub struct BrowseApp {
+    promise: SaveLoadPromise,
     sample_text: String,
 }
 
@@ -6,6 +8,7 @@ impl Default for BrowseApp {
     fn default() -> Self {
         Self {
             sample_text: "This is some sample text".into(),
+            promise: None,
         }
     }
 }
@@ -21,33 +24,41 @@ impl eframe::App for BrowseApp {
     /// Called each time the UI needs repainting, which may be many times per second.
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         // assign sample text once it comes in
-        // if let Ok(text) = self.text_channel.1.try_recv() {
-        //     self.sample_text = text;
-        // }
+        if let Some(promise) = &self.promise {
+            // TODO: Consume the promise and not allocate a new string
+            if let Some(result) = promise.ready() {
+                if let Some(text) = result {
+                    self.sample_text = text.clone();
+                } else {
+                    // User probably cancelled but the promise completed
+                }
+                // Clear promise after we use it
+                self.promise = None;
+            }
+        }
 
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.text_edit_multiline(&mut self.sample_text);
             // a simple button opening the dialog
             if ui.button("📂 Open text file").clicked() {
-                // let sender = self.text_channel.0.clone();
                 let task = rfd::AsyncFileDialog::new().pick_file();
                 // Context is wrapped in an Arc so it's cheap to clone as per:
                 // > Context is cheap to clone, and any clones refers to the same mutable data (Context uses refcounting internally).
                 // Taken from https://docs.rs/egui/0.24.1/egui/struct.Context.html
                 let ctx = ui.ctx().clone();
-                // execute(async move {
-                //     let file = task.await;
-                //     if let Some(file) = file {
-                //         let text = file.read().await;
-                //         let _ = sender.send(String::from_utf8_lossy(&text).to_string());
-                //         ctx.request_repaint();
-                //     }
-                // });
+                // TODO: Test if ctx is working as expected
+                self.promise = execute(async move {
+                    let file = task.await;
+                    let file = file?;
+                    let text = file.read().await;
+                    ctx.request_repaint();
+                    Some(String::from_utf8_lossy(&text).to_string())
+                });
             }
 
             if ui.button("💾 Save text to file").clicked() {
-                let task = rfd::AsyncFileDialog::new().save_file();
-                let contents = self.sample_text.clone();
+                // let task = rfd::AsyncFileDialog::new().save_file();
+                // let contents = self.sample_text.clone();
                 // execute(async move {
                 //     let file = task.await;
                 //     if let Some(file) = file {
@@ -57,6 +68,12 @@ impl eframe::App for BrowseApp {
             }
         });
     }
+}
+
+fn execute(
+    f: impl std::future::Future<Output = Option<String>> + std::marker::Send + 'static,
+) -> SaveLoadPromise {
+    Some(poll_promise::Promise::spawn_async(f))
 }
 
 // #[cfg(not(target_arch = "wasm32"))]

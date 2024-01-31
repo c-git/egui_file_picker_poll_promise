@@ -22,11 +22,13 @@ serde = { version = "1", features = ["derive"] }
 # native:
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 env_logger = "0.11"
+poll-promise = { version = "0.3.0", features = ["tokio"] }
 rfd = { version = "0.13.0", features = ["tokio"] }
 tokio = "1.35.1"
 
 # web:
 [target.'cfg(target_arch = "wasm32")'.dependencies]
+poll-promise = { version = "0.3.0", features = ["web"] }
 rfd = "0.13.0"
 wasm-bindgen-futures = "0.4"
 

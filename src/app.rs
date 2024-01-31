@@ -41,13 +41,12 @@ impl eframe::App for BrowseApp {
             ui.text_edit_multiline(&mut self.sample_text);
             // a simple button opening the dialog
             if ui.button("📂 Open text file").clicked() {
-                let task = rfd::AsyncFileDialog::new().pick_file();
                 // Context is wrapped in an Arc so it's cheap to clone as per:
                 // > Context is cheap to clone, and any clones refers to the same mutable data (Context uses refcounting internally).
                 // Taken from https://docs.rs/egui/0.24.1/egui/struct.Context.html
                 let ctx = ui.ctx().clone();
                 self.promise = execute(async move {
-                    let file = task.await?; // Returns None if file is None
+                    let file = rfd::AsyncFileDialog::new().pick_file().await?; // Returns None if file is None
                     let text = file.read().await;
 
                     // Uncomment the following line to simulate taking long to load

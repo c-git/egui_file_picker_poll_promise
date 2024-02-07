@@ -58,14 +58,21 @@ impl eframe::App for BrowseApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         // assign sample text once it comes in
         if let Some(promise) = &self.promise {
-            if let Some(result) = promise.ready() {
-                if let Some(text) = result {
-                    self.sample_text = text.clone();
+            if promise.ready().is_some() {
+                // Clear promise and take the value out
+                // Doesn't matter for string as we can just clone it but depending on the type you have
+                // you may not be able to easily clone it and would prefer get the owned value
+                let mut temp = None;
+                std::mem::swap(&mut temp, &mut self.promise);
+
+                let owned_promise = temp.expect("we got here because it was some");
+                let inner_option = owned_promise.block_and_take(); // This should be fine because we know it's ready
+
+                if let Some(text) = inner_option {
+                    self.sample_text = text;
                 } else {
                     // User probably cancelled or it was saving but the promise completed either way
                 }
-                // Clear promise after we use it
-                self.promise = None;
             }
         }
 

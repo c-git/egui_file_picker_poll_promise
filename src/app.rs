@@ -102,7 +102,3 @@ where
 {
     Some(poll_promise::Promise::spawn_async(f))
 }
-
-// fn execute<F: std::future::Future<Output = ()> + 'static>(f: F) {
-//     wasm_bindgen_futures::spawn_local(f);
-// }
